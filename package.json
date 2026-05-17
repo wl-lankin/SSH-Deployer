@@ -9,8 +9,6 @@
   "homepage": "https://wolfgang-linz.de",
   "scripts": {
     "start": "electron .",
-    "icon": "node tools/make-icon.js",
-    "screenshot": "electron tools/screenshot.js",
     "dist": "electron-builder",
     "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux",
