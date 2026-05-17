@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:;"
+    />
+    <title>SSH Deployer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ============ CUSTOM TITLE BAR ============ -->
+    <div id="titlebar">
+      <div class="tb-left">
+        <span class="tb-mark">⟠</span>
+        <span class="tb-title">SSH Deployer</span>
+      </div>
+      <div class="tb-controls">
+        <button id="win-min" class="tb-btn" title="Minimize" aria-label="Minimize">
+          <svg width="11" height="11" viewBox="0 0 11 11"><line x1="1" y1="6" x2="10" y2="6" /></svg>
+        </button>
+        <button id="win-max" class="tb-btn" title="Maximize" aria-label="Maximize">
+          <svg class="ic-max" width="11" height="11" viewBox="0 0 11 11">
+            <rect x="1.5" y="1.5" width="8" height="8" />
+          </svg>
+          <svg class="ic-restore" width="11" height="11" viewBox="0 0 11 11">
+            <rect x="1.5" y="3.5" width="6" height="6" />
+            <path d="M3.7 3.5 V1.5 H9.5 V7.3 H7.5" />
+          </svg>
+        </button>
+        <button id="win-close" class="tb-btn tb-close" title="Close" aria-label="Close">
+          <svg width="11" height="11" viewBox="0 0 11 11">
+            <line x1="1.5" y1="1.5" x2="9.5" y2="9.5" />
+            <line x1="9.5" y1="1.5" x2="1.5" y2="9.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ ENVIRONMENT TABS ============ -->
+    <div id="tabbar">
+      <div id="tab-list"></div>
+      <button id="tab-new" class="tab-add" title="New environment" aria-label="New environment">+</button>
+    </div>
+
+    <!-- ============ ENVIRONMENT EDITOR ============ -->
+    <section id="view-connect" class="view view-connect">
+      <div class="connect-wrap">
+      <div class="connect-card">
+        <div class="editor-head">
+          <h2 id="cx-form-title">New environment</h2>
+          <button id="cx-delete" type="button" class="btn-danger hidden">Delete</button>
+        </div>
+
+        <label class="field">
+          <span>Environment name</span>
+          <input id="cx-name" type="text" placeholder="e.g. Acme Corp — Production" autocomplete="off" />
+        </label>
+
+        <div class="field">
+          <span>Colour</span>
+          <div id="cx-colors" class="color-row"></div>
+        </div>
+
+        <label class="field">
+          <span>Node host / IP</span>
+          <input id="cx-host" type="text" placeholder="10.0.0.10" autocomplete="off" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Port</span>
+            <input id="cx-port" type="number" value="22" min="1" max="65535" />
+          </label>
+          <label class="field grow">
+            <span>Username</span>
+            <input id="cx-user" type="text" value="root" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="field">
+          <span>Authentication</span>
+          <div class="seg" data-seg="cx">
+            <button type="button" class="seg-btn active" data-auth="password">Password</button>
+            <button type="button" class="seg-btn" data-auth="key">Private key</button>
+          </div>
+        </div>
+
+        <label class="field" id="cx-pass-row">
+          <span>Password</span>
+          <input id="cx-pass" type="password" autocomplete="off" />
+        </label>
+
+        <div class="field hidden" id="cx-key-row">
+          <span>Private key file</span>
+          <div class="file-pick">
+            <button type="button" id="cx-keybtn" class="btn-ghost">Choose file…</button>
+            <span id="cx-keyname" class="file-name">No file selected</span>
+          </div>
+          <input id="cx-passphrase" type="password" placeholder="Key passphrase (optional)" autocomplete="off" />
+        </div>
+
+        <div id="cx-error" class="error-box hidden"></div>
+
+        <button id="cx-connect" class="btn-primary btn-block">
+          <span class="btn-label">Save &amp; Connect</span>
+          <span class="spinner hidden"></span>
+        </button>
+
+        <button id="cx-diagnose" type="button" class="link-btn diag-link">
+          Run connection diagnostics
+        </button>
+      </div>
+      <div id="cx-diag" class="diag-panel hidden"></div>
+      </div>
+    </section>
+
+    <!-- ============ MAIN VIEW ============ -->
+    <section id="view-main" class="view view-main hidden">
+      <header class="topbar">
+        <span id="conn-pill" class="pill"><i class="dot"></i><span id="conn-node"></span></span>
+        <div class="topbar-right">
+          <button id="btn-history" class="btn-ghost">History</button>
+          <button id="btn-refresh" class="btn-ghost">Refresh</button>
+          <button id="btn-disconnect" class="btn-ghost">Disconnect</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <!-- LEFT: key + credentials -->
+        <aside class="panel-left">
+          <div class="card">
+            <div class="card-head">
+              <span class="step-no">1</span>
+              <h2>SSH Public Key</h2>
+              <button id="key-loadfile" type="button" class="link-btn">Load .pub file…</button>
+            </div>
+            <textarea
+              id="key-input"
+              class="key-area"
+              spellcheck="false"
+              placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE... user@host"
+            ></textarea>
+            <div id="key-status" class="key-status"></div>
+            <div class="verify-key-row">
+              <span class="vk-label">Verify login key</span>
+              <span id="verify-key-name" class="vk-name">not set</span>
+              <button id="verify-key-pick" type="button" class="link-btn">Choose…</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="step-no">2</span>
+              <h2>Deployment Method</h2>
+            </div>
+
+            <div class="seg seg-block" data-seg="mode">
+              <button type="button" class="seg-btn active" data-auth="proxmox">Via Proxmox</button>
+              <button type="button" class="seg-btn" data-auth="direct">Direct SSH</button>
+            </div>
+
+            <div id="mode-proxmox" class="mode-pane">
+              <p class="card-hint">
+                Keys are pushed through your Proxmox node — no guest login
+                needed. Containers and nodes always work; VMs need the QEMU
+                guest agent running.
+              </p>
+            </div>
+
+            <div id="mode-direct" class="mode-pane hidden">
+              <p class="card-hint">The app logs in to each host over SSH to install the key.</p>
+
+              <label class="check">
+                <input id="dc-same" type="checkbox" checked />
+                <span>Reuse my Proxmox login</span>
+              </label>
+
+              <div id="dc-fields" class="dc-fields hidden">
+              <div class="field-row">
+                <label class="field">
+                  <span>Port</span>
+                  <input id="dc-port" type="number" value="22" min="1" max="65535" />
+                </label>
+                <label class="field grow">
+                  <span>Username</span>
+                  <input id="dc-user" type="text" value="root" autocomplete="off" />
+                </label>
+              </div>
+
+              <div class="field">
+                <span>Authentication</span>
+                <div class="seg" data-seg="dc">
+                  <button type="button" class="seg-btn active" data-auth="password">Password</button>
+                  <button type="button" class="seg-btn" data-auth="key">Private key</button>
+                </div>
+              </div>
+
+              <label class="field" id="dc-pass-row">
+                <span>Password</span>
+                <input id="dc-pass" type="password" autocomplete="off" />
+              </label>
+
+              <div class="field hidden" id="dc-key-row">
+                <span>Private key file</span>
+                <div class="file-pick">
+                  <button type="button" id="dc-keybtn" class="btn-ghost">Choose file…</button>
+                  <span id="dc-keyname" class="file-name">No file selected</span>
+                </div>
+                <input id="dc-passphrase" type="password" placeholder="Key passphrase (optional)" autocomplete="off" />
+              </div>
+            </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- RIGHT: host browser -->
+        <div class="panel-right card">
+          <div class="card-head">
+            <span class="step-no">3</span>
+            <h2>Choose Hosts</h2>
+            <span id="host-count" class="muted-count"></span>
+          </div>
+
+          <div class="host-toolbar">
+            <input id="host-search" type="search" placeholder="Search hosts…" />
+            <div class="seg seg-filter" id="host-filters">
+              <button type="button" class="seg-btn active" data-filter="all">All</button>
+              <button type="button" class="seg-btn" data-filter="node">Nodes</button>
+              <button type="button" class="seg-btn" data-filter="qemu">VMs</button>
+              <button type="button" class="seg-btn" data-filter="lxc">LXC</button>
+            </div>
+            <label class="check check-inline">
+              <input id="host-running" type="checkbox" />
+              <span>Running only</span>
+            </label>
+            <button id="host-selectall" class="link-btn">Select all</button>
+          </div>
+
+          <div id="host-list" class="host-list"></div>
+          <div id="host-empty" class="empty-state hidden">No hosts match your filter.</div>
+        </div>
+      </main>
+
+      <footer class="deploybar">
+        <div id="deploy-summary" class="deploy-summary">Nothing selected yet.</div>
+        <div class="deploy-actions">
+          <button id="btn-verify" class="btn-ghost" disabled>Verify key</button>
+          <button id="btn-deploy" class="btn-primary" disabled>
+            <span class="btn-label">Deploy key</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </div>
+      </footer>
+
+      <div id="main-loading" class="main-loading hidden">
+        <div class="spinner big"></div>
+        <div id="main-loading-text">Connecting…</div>
+      </div>
+    </section>
+
+    <!-- ============ RESULTS OVERLAY ============ -->
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <div class="overlay-head">
+          <h2 id="ov-title">Deploying…</h2>
+          <span id="ov-progress" class="pill"></span>
+        </div>
+        <div id="ov-list" class="ov-list"></div>
+        <div class="overlay-foot">
+          <button id="btn-ov-close" class="btn-primary" disabled>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ HISTORY OVERLAY ============ -->
+    <div id="history-overlay" class="overlay hidden">
+      <div class="overlay-card history-card">
+        <div class="overlay-head">
+          <h2>Deployment History</h2>
+          <button id="history-clear" class="btn-ghost">Clear all</button>
+        </div>
+        <div class="history-tools">
+          <input id="history-search" type="search" placeholder="Filter by key or host…" />
+        </div>
+        <div id="history-list" class="history-list"></div>
+        <div id="history-empty" class="empty-state hidden"></div>
+        <div class="overlay-foot">
+          <button id="history-close" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

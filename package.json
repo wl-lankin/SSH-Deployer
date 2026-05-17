@@ -1,0 +1,65 @@
+{
+  "name": "ssh-deployer",
+  "productName": "SSH Deployer",
+  "version": "1.0.0",
+  "description": "Deploy an SSH public key to any host in a Proxmox cluster.",
+  "main": "src/main/main.js",
+  "author": "Wolfgang Linz",
+  "license": "MIT",
+  "homepage": "https://wolfgang-linz.de",
+  "scripts": {
+    "start": "electron .",
+    "icon": "node tools/make-icon.js",
+    "screenshot": "electron tools/screenshot.js",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "ssh2": "^1.16.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "de.wolfganglinz.ssh-deployer",
+    "productName": "SSH Deployer",
+    "npmRebuild": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "maintainer": "Wolfgang Linz",
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
