@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('api', {
   listEnvironments: () => ipcRenderer.invoke('env:list'),
   saveEnvironment: (env) => ipcRenderer.invoke('env:save', env),
   deleteEnvironment: (id) => ipcRenderer.invoke('env:delete', id),
+  reorderEnvironments: (ids) => ipcRenderer.invoke('env:reorder', ids),
   setLastEnvironment: (id) => ipcRenderer.invoke('env:setLast', id),
 
   parseKey: (text) => ipcRenderer.invoke('key:parse', text),

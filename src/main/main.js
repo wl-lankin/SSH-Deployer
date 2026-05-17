@@ -186,6 +186,7 @@ ipcMain.handle('history:clear', () => store.saveHistory([]));
 ipcMain.handle('env:list', () => store.listEnvironments());
 ipcMain.handle('env:save', (_e, env) => store.saveEnvironment(env));
 ipcMain.handle('env:delete', (_e, id) => store.deleteEnvironment(id));
+ipcMain.handle('env:reorder', (_e, ids) => store.reorderEnvironments(ids));
 ipcMain.handle('env:setLast', (_e, id) => store.setLastEnvironment(id));
 
 ipcMain.handle('key:parse', (_e, text) => parsePublicKey(text));
