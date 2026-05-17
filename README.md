@@ -76,7 +76,7 @@ Grab the latest build from the **[Releases page](https://github.com/wl-lankin/SS
 
 ```
    ┌───────────────┐   SSH    ┌───────────────┐   pct exec / qm guest exec
-   │  SSH Deployer │ ───────▶ │  Proxmox node  │ ───────────────────────────▶  VMs · LXC · nodes
+   │  SSH Deployer │ ───────▶ │ Proxmox node  │ ───────────────────────────▶  VMs · LXC · nodes
    └───────────────┘          └───────────────┘            authorized_keys
 ```
 
