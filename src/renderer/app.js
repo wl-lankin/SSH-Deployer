@@ -118,12 +118,28 @@ function renderTabs() {
   );
 }
 
+const connecting = new Set();
+
 function clickTab(id) {
   if (state.deploying) return;
   if (state.view === 'workspace' && state.activeEnvId === id) return;
   const sess = state.sessions[id];
-  if (sess && sess.ready) switchToSession(id);
-  else connectEnv(id);
+  if (sess && sess.ready) {
+    switchToSession(id);
+    return;
+  }
+  if (connecting.has(id)) {
+    // a background connect is already running — just bring its view forward
+    const env = state.environments.find((e) => e.id === id);
+    state.activeEnvId = id;
+    state.connected = false;
+    state.editingId = null;
+    setView('workspace');
+    renderTabs();
+    showLoading('Connecting to ' + (env ? env.name : '') + '…');
+    return;
+  }
+  connectEnv(id);
 }
 
 /* ---------- per-environment sessions ---------- */
@@ -159,6 +175,7 @@ function switchToSession(id) {
   setView('workspace');
   renderTabs();
   renderWorkspace();
+  resolveGuestAddresses(); // resume IP resolution for any unresolved guests
 }
 
 /* ======================================================================
@@ -349,8 +366,9 @@ async function doConnect() {
 /** Connect to a saved environment (clicked tab with no live session). */
 async function connectEnv(id) {
   const env = state.environments.find((e) => e.id === id);
-  if (!env) return;
+  if (!env || connecting.has(id)) return;
 
+  connecting.add(id);
   cancelResolution();
   saveActiveSession();
   state.activeEnvId = id;
@@ -360,17 +378,27 @@ async function connectEnv(id) {
   showLoading('Connecting to ' + env.name + '…');
 
   const conn = connFromEnv(env);
-  const res = await backend.connect(conn);
-  if (state.activeEnvId !== id) return; // user moved on
+  let res;
+  try {
+    res = await backend.connect(conn);
+  } catch (err) {
+    res = { ok: false, error: (err && err.message) || String(err) };
+  }
+  connecting.delete(id);
 
   if (!res.ok) {
-    hideLoading();
-    openEditor(id);
-    showConnectError(res.error);
-    doDiagnose(conn);
+    // surface the failure only if the user is still looking at this tab
+    if (state.activeEnvId === id) {
+      hideLoading();
+      openEditor(id);
+      showConnectError(res.error);
+      doDiagnose(conn);
+    }
     return;
   }
 
+  // cache the session whether or not this tab is still in front — once a
+  // connect is started it always finishes, in the background if need be
   state.sessions[id] = {
     node: res.node,
     hosts: res.hosts,
@@ -378,12 +406,16 @@ async function connectEnv(id) {
     proxmoxConn: conn,
     ready: true,
   };
-  await backend.setLastEnvironment(id);
-  activateSession(id);
-  hideLoading();
+  backend.setLastEnvironment(id);
   renderTabs();
-  renderWorkspace();
-  resolveGuestAddresses();
+
+  if (state.activeEnvId === id) {
+    activateSession(id);
+    hideLoading();
+    renderWorkspace();
+    resolveGuestAddresses();
+  }
+  // otherwise: the session is cached; its IPs resolve when the tab is opened
 }
 
 function showConnectError(msg) {
@@ -527,9 +559,11 @@ async function resolveGuestAddresses() {
     addrDetach = null;
   }
 
-  const guests = state.hosts.filter(
-    (h) => h.kind !== 'node' && h.status === 'running' && !h.address
+  // every running guest, and the ones still awaiting a resolution attempt
+  const allGuests = state.hosts.filter(
+    (h) => h.kind !== 'node' && h.status === 'running'
   );
+  const guests = allGuests.filter((h) => !h.address && !h.resolved);
   if (!guests.length) {
     state.resolving = null;
     updateHostCount();
@@ -537,7 +571,11 @@ async function resolveGuestAddresses() {
   }
 
   guests.forEach((g) => (g.resolving = true));
-  state.resolving = { total: guests.length, done: 0 };
+  // count already-resolved guests so the progress carries on rather than restarting
+  state.resolving = {
+    total: allGuests.length,
+    done: allGuests.length - guests.length,
+  };
   renderHosts();
 
   addrDetach = backend.onAddressProgress((upd) => {
@@ -545,6 +583,7 @@ async function resolveGuestAddresses() {
     const host = state.hosts.find((h) => h.id === upd.id);
     if (!host) return;
     host.resolving = false;
+    host.resolved = true; // attempted — don't re-resolve when switching tabs
     if (upd.address && !host.address) host.address = upd.address;
     if (state.resolving) state.resolving.done++;
     applyAddressUpdate(host);
@@ -629,11 +668,19 @@ function visibleHosts() {
   });
 }
 
+function updateSelectAllLabel() {
+  const visible = visibleHosts();
+  const all =
+    visible.length > 0 && visible.every((h) => state.selected.has(h.id));
+  $('host-selectall').textContent = all ? 'Unselect all' : 'Select all';
+}
+
 function renderHosts() {
   const list = $('host-list');
   const hosts = visibleHosts();
 
   updateHostCount();
+  updateSelectAllLabel();
   $('host-empty').classList.toggle('hidden', hosts.length > 0);
 
   const groups = new Map();
@@ -1081,6 +1128,7 @@ function deployCreds() {
 }
 
 function updateDeployBar() {
+  updateSelectAllLabel();
   const sel = selectedHosts();
   const summary = $('deploy-summary');
   const needAddr = state.deployMode === 'direct';

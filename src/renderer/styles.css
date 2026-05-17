@@ -689,7 +689,7 @@ input.host-addr.resolving::placeholder { color: var(--accent); }
    ABOUT
    ===================================================================== */
 .tb-info { font-size: 13px; }
-.about-card { max-width: 400px; }
+.about-card { max-width: 420px; }
 .about-head {
   display: flex; align-items: center; gap: 14px; padding: 22px 22px 0;
 }
