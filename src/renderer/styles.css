@@ -661,6 +661,14 @@ input.host-addr.resolving::placeholder { color: var(--accent); }
   font-family: inherit; transition: background .12s;
 }
 .audit-remove:hover { background: rgba(255, 107, 107, .24); }
+.audit-actions { display: flex; gap: 8px; flex: none; }
+.audit-use {
+  background: var(--elev); color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background .12s, color .12s;
+}
+.audit-use:hover { background: var(--panel-2); color: var(--text); }
 .audit-key-hosts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .audit-count {
   font-size: 11.5px; font-weight: 700; color: var(--text-dim); margin-right: 4px;
@@ -681,7 +689,7 @@ input.host-addr.resolving::placeholder { color: var(--accent); }
    ABOUT
    ===================================================================== */
 .tb-info { font-size: 13px; }
-.about-card { max-width: 440px; }
+.about-card { max-width: 400px; }
 .about-head {
   display: flex; align-items: center; gap: 14px; padding: 22px 22px 0;
 }

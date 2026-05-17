@@ -945,7 +945,10 @@ function drawAuditBody() {
           <span class="chip chip-fp">${escapeHtml(k.fingerprint)}</span>
           ${isCurrent ? '<span class="chip chip-current">your current key</span>' : ''}
         </div>
-        <button class="audit-remove" data-b64="${escapeAttr(b64)}">Remove…</button>
+        <div class="audit-actions">
+          <button class="audit-use" data-b64="${escapeAttr(b64)}">Use</button>
+          <button class="audit-remove" data-b64="${escapeAttr(b64)}">Remove…</button>
+        </div>
       </div>
       <div class="audit-key-hosts">
         <span class="audit-count">on ${e.hostIds.length} / ${a.total}</span>
@@ -964,6 +967,17 @@ function drawAuditBody() {
       '</div>';
   }
   body.innerHTML = html;
+}
+
+/** Load an audited key into the deploy key field so it can be rolled out elsewhere. */
+function useAuditKey(b64) {
+  const a = state.audit;
+  if (!a || !a.keyMap[b64]) return;
+  const k = a.keyMap[b64].info;
+  $('key-input').value =
+    `${k.type} ${k.b64}${k.comment ? ' ' + k.comment : ''}`;
+  parseKeyNow();
+  $('audit-overlay').classList.add('hidden');
 }
 
 async function removeAuditKey(b64) {
@@ -1513,8 +1527,10 @@ async function init() {
     $('audit-overlay').classList.add('hidden')
   );
   $('audit-body').addEventListener('click', (e) => {
-    const btn = e.target.closest('.audit-remove');
-    if (btn) removeAuditKey(btn.dataset.b64);
+    const rm = e.target.closest('.audit-remove');
+    if (rm) return removeAuditKey(rm.dataset.b64);
+    const use = e.target.closest('.audit-use');
+    if (use) useAuditKey(use.dataset.b64);
   });
   $('verify-key-pick').addEventListener('click', async () => {
     const r = await backend.pickKey();
