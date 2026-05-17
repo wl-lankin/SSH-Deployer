@@ -11,6 +11,11 @@ on:
 permissions:
   contents: write
 
+# Run the JavaScript actions on Node 24, silencing the Node 20 deprecation
+# warnings (actions/checkout, setup-node, upload-artifact, download-artifact).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: Build · ${{ matrix.name }}
