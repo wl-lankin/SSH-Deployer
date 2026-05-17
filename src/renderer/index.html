@@ -17,6 +17,7 @@
         <span class="tb-title">SSH Deployer</span>
       </div>
       <div class="tb-controls">
+        <button id="win-info" class="tb-btn tb-info" title="About SSH Deployer" aria-label="About">ⓘ</button>
         <button id="win-min" class="tb-btn" title="Minimize" aria-label="Minimize">
           <svg width="11" height="11" viewBox="0 0 11 11"><line x1="1" y1="6" x2="10" y2="6" /></svg>
         </button>
@@ -246,6 +247,7 @@
       <footer class="deploybar">
         <div id="deploy-summary" class="deploy-summary">Nothing selected yet.</div>
         <div class="deploy-actions">
+          <button id="btn-audit" class="btn-ghost" disabled>Audit keys</button>
           <button id="btn-verify" class="btn-ghost" disabled>Verify key</button>
           <button id="btn-deploy" class="btn-primary" disabled>
             <span class="btn-label">Deploy key</span>
@@ -288,6 +290,58 @@
         <div id="history-empty" class="empty-state hidden"></div>
         <div class="overlay-foot">
           <button id="history-close" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ KEY AUDIT OVERLAY ============ -->
+    <div id="audit-overlay" class="overlay hidden">
+      <div class="overlay-card audit-card">
+        <div class="overlay-head">
+          <h2 id="audit-title">Key Audit</h2>
+          <span id="audit-progress" class="pill"></span>
+        </div>
+        <div id="audit-body" class="audit-body"></div>
+        <div class="overlay-foot">
+          <button id="audit-close" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ABOUT OVERLAY ============ -->
+    <div id="about-overlay" class="overlay hidden">
+      <div class="overlay-card about-card">
+        <div class="about-head">
+          <div class="about-mark">⟠</div>
+          <div>
+            <div class="about-name">SSH Deployer</div>
+            <div class="about-version" id="about-version">—</div>
+          </div>
+        </div>
+        <p class="about-tagline">
+          Deploy, verify and audit SSH keys across your Proxmox cluster.
+        </p>
+        <div class="about-rows">
+          <div class="about-row">
+            <span class="about-k">Author</span>
+            <span class="about-v">Wolfgang Linz</span>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Website</span>
+            <a class="ext-link" data-url="https://wolfgang-linz.de">wolfgang-linz.de</a>
+          </div>
+          <div class="about-row">
+            <span class="about-k">Source</span>
+            <a class="ext-link" data-url="https://github.com/wl-lankin/SSH-Deployer">github.com/wl-lankin/SSH-Deployer</a>
+          </div>
+          <div class="about-row">
+            <span class="about-k">License</span>
+            <span class="about-v">MIT</span>
+          </div>
+        </div>
+        <div class="about-runtime" id="about-runtime">—</div>
+        <div class="overlay-foot">
+          <button id="about-close" class="btn-primary">Close</button>
         </div>
       </div>
     </div>

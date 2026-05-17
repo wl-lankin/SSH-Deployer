@@ -148,7 +148,8 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); }
   font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;
   transition: background .12s, border-color .12s;
 }
-.btn-ghost:hover { background: var(--panel-2); border-color: #3a4252; }
+.btn-ghost:hover:not(:disabled) { background: var(--panel-2); border-color: #3a4252; }
+.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
 
 .link-btn {
   background: none; border: 0; color: var(--accent);
@@ -619,4 +620,98 @@ input.host-addr.resolving::placeholder { color: var(--accent); }
 }
 .hist-env i {
   width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--env);
+}
+
+/* ========================================================================
+   KEY AUDIT
+   ===================================================================== */
+.audit-card { max-width: 680px; }
+.audit-body { overflow-y: auto; padding: 14px 16px; min-height: 120px; }
+
+.audit-loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 14px; padding: 48px 0;
+  color: var(--text-dim); font-size: 13px;
+}
+.audit-loading .spinner {
+  width: 28px; height: 28px; border-width: 3px;
+  border-color: rgba(255, 255, 255, .12); border-top-color: var(--accent);
+}
+
+.audit-summary {
+  font-size: 12px; color: var(--text-faint); font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.audit-key {
+  background: var(--bg-soft); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px;
+}
+.audit-key:last-child { margin-bottom: 0; }
+.audit-key.is-current { border-color: rgba(255, 140, 66, .4); }
+.audit-key-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 9px;
+}
+.chip.chip-current { background: var(--accent-soft); color: var(--accent); }
+.audit-remove {
+  flex: none; background: rgba(255, 107, 107, .14); color: var(--err);
+  border: 1px solid rgba(255, 107, 107, .3); border-radius: var(--radius-sm);
+  padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background .12s;
+}
+.audit-remove:hover { background: rgba(255, 107, 107, .24); }
+.audit-key-hosts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.audit-count {
+  font-size: 11.5px; font-weight: 700; color: var(--text-dim); margin-right: 4px;
+}
+.audit-host {
+  font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+  background: var(--elev); color: var(--text-dim);
+}
+.audit-errors {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 11.5px; color: var(--text-faint);
+}
+.audit-errors .audit-host { background: rgba(255, 107, 107, .12); color: var(--err); }
+.empty-state.audit-empty { padding: 40px 0; }
+
+/* ========================================================================
+   ABOUT
+   ===================================================================== */
+.tb-info { font-size: 13px; }
+.about-card { max-width: 384px; }
+.about-head {
+  display: flex; align-items: center; gap: 14px; padding: 22px 22px 0;
+}
+.about-mark {
+  width: 52px; height: 52px; flex: none; border-radius: 14px;
+  background: linear-gradient(150deg, var(--accent), #ff5e62);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 27px; color: #1a1205;
+  box-shadow: 0 8px 22px rgba(255, 140, 66, .3);
+}
+.about-name { font-size: 18px; font-weight: 700; }
+.about-version {
+  font-size: 12.5px; font-weight: 600; color: var(--accent); margin-top: 3px;
+}
+.about-tagline {
+  padding: 14px 22px 2px; font-size: 12.5px;
+  color: var(--text-dim); line-height: 1.55;
+}
+.about-rows { padding: 10px 22px 0; }
+.about-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--border-soft); font-size: 12.5px;
+}
+.about-row:last-child { border-bottom: 0; }
+.about-k { color: var(--text-faint); font-weight: 600; }
+.about-v { color: var(--text-dim); }
+.ext-link { color: var(--accent); cursor: pointer; }
+.ext-link:hover { text-decoration: underline; }
+.about-runtime {
+  padding: 12px 22px 16px; font-size: 10.5px; color: var(--text-faint);
+  font-family: "SF Mono", Menlo, Consolas, monospace;
 }

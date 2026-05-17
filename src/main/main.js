@@ -17,6 +17,7 @@ const store = require('./store');
 const proxmox = require('./proxmox');
 const deployer = require('./deployer');
 const verifier = require('./verifier');
+const keyops = require('./keyops');
 const diagnostics = require('./diagnostics');
 const { parsePublicKey } = require('./keyinfo');
 
@@ -165,6 +166,19 @@ ipcMain.on('window:control', (e, action) => {
   else if (action === 'close') w.close();
 });
 
+ipcMain.handle('app:info', () => ({
+  version: app.getVersion(),
+  electron: process.versions.electron,
+  node: process.versions.node,
+  chrome: process.versions.chrome,
+}));
+
+ipcMain.on('shell:open-external', (_e, url) => {
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+    shell.openExternal(url);
+  }
+});
+
 ipcMain.handle('history:list', () => store.loadHistory());
 ipcMain.handle('history:add', (_e, entry) => store.addHistory(entry));
 ipcMain.handle('history:clear', () => store.saveHistory([]));
@@ -278,6 +292,65 @@ ipcMain.handle('verify:start', async (e, payload) => {
   try {
     return await verifier.verifyAll(
       { hosts: payload.hosts || [], privateKey, passphrase: payload.passphrase },
+      emit
+    );
+  } catch (err) {
+    return { error: (err && err.message) || String(err) };
+  }
+});
+
+ipcMain.handle('audit:start', async (e, payload) => {
+  const emit = (msg) => {
+    if (!e.sender.isDestroyed()) e.sender.send('audit:progress', msg);
+  };
+  try {
+    if (payload.mode === 'proxmox') {
+      return await keyops.auditHosts(
+        {
+          mode: 'proxmox',
+          hosts: payload.hosts,
+          proxmoxAuth: resolveAuth(payload.proxmoxConn),
+          connectedNode: payload.connectedNode,
+          nodeIps: payload.nodeIps,
+        },
+        emit
+      );
+    }
+    return await keyops.auditHosts(
+      { mode: 'direct', hosts: payload.hosts, creds: payload.creds, resolveAuth },
+      emit
+    );
+  } catch (err) {
+    return { error: (err && err.message) || String(err) };
+  }
+});
+
+ipcMain.handle('keyremove:start', async (e, payload) => {
+  const emit = (msg) => {
+    if (!e.sender.isDestroyed()) e.sender.send('keyremove:progress', msg);
+  };
+  try {
+    if (payload.mode === 'proxmox') {
+      return await keyops.removeKey(
+        {
+          mode: 'proxmox',
+          hosts: payload.hosts,
+          keyB64: payload.keyB64,
+          proxmoxAuth: resolveAuth(payload.proxmoxConn),
+          connectedNode: payload.connectedNode,
+          nodeIps: payload.nodeIps,
+        },
+        emit
+      );
+    }
+    return await keyops.removeKey(
+      {
+        mode: 'direct',
+        hosts: payload.hosts,
+        keyB64: payload.keyB64,
+        creds: payload.creds,
+        resolveAuth,
+      },
       emit
     );
   } catch (err) {

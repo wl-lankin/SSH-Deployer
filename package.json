@@ -1,7 +1,7 @@
 {
   "name": "ssh-deployer",
   "productName": "SSH Deployer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deploy an SSH public key to any host in a Proxmox cluster.",
   "main": "src/main/main.js",
   "author": "Wolfgang Linz",
