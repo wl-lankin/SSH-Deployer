@@ -12,6 +12,7 @@ const {
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const https = require('https');
 
 const store = require('./store');
 const proxmox = require('./proxmox');
@@ -178,6 +179,113 @@ ipcMain.on('shell:open-external', (_e, url) => {
     shell.openExternal(url);
   }
 });
+
+/* ---------------- options: launch at login ---------------- */
+const AUTOSTART_FILE = path.join(
+  os.homedir(),
+  '.config',
+  'autostart',
+  'ssh-deployer.desktop'
+);
+
+function getAutostart() {
+  if (process.platform === 'linux') return fs.existsSync(AUTOSTART_FILE);
+  try {
+    return app.getLoginItemSettings().openAtLogin;
+  } catch {
+    return false;
+  }
+}
+
+function setAutostart(enabled) {
+  if (process.platform === 'linux') {
+    try {
+      if (enabled) {
+        fs.mkdirSync(path.dirname(AUTOSTART_FILE), { recursive: true });
+        fs.writeFileSync(
+          AUTOSTART_FILE,
+          '[Desktop Entry]\nType=Application\nName=SSH Deployer\n' +
+            `Exec="${process.execPath}"\nTerminal=false\n` +
+            'X-GNOME-Autostart-enabled=true\n'
+        );
+      } else if (fs.existsSync(AUTOSTART_FILE)) {
+        fs.unlinkSync(AUTOSTART_FILE);
+      }
+    } catch {
+      /* ignore — non-fatal */
+    }
+  } else {
+    try {
+      app.setLoginItemSettings({ openAtLogin: !!enabled });
+    } catch {
+      /* ignore */
+    }
+  }
+  return getAutostart();
+}
+
+/* ---------------- options: update check ---------------- */
+function semverNewer(a, b) {
+  const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) > (pb[i] || 0)) return true;
+    if ((pa[i] || 0) < (pb[i] || 0)) return false;
+  }
+  return false;
+}
+
+function checkForUpdate() {
+  return new Promise((resolve) => {
+    const req = https.get(
+      'https://api.github.com/repos/wl-lankin/SSH-Deployer/releases/latest',
+      {
+        headers: {
+          'User-Agent': 'SSH-Deployer',
+          Accept: 'application/vnd.github+json',
+        },
+      },
+      (res) => {
+        if (res.statusCode !== 200) {
+          res.resume();
+          resolve({ error: `GitHub responded with HTTP ${res.statusCode}` });
+          return;
+        }
+        let body = '';
+        res.on('data', (d) => (body += d));
+        res.on('end', () => {
+          try {
+            const rel = JSON.parse(body);
+            const latest = String(rel.tag_name || '').replace(/^v/i, '');
+            const current = app.getVersion();
+            resolve({
+              current,
+              latest,
+              url: rel.html_url || '',
+              notes: rel.name || '',
+              updateAvailable: !!latest && semverNewer(latest, current),
+            });
+          } catch {
+            resolve({ error: 'Could not read the GitHub response' });
+          }
+        });
+      }
+    );
+    req.on('error', (e) => resolve({ error: e.message || 'Network error' }));
+    req.setTimeout(10000, () => {
+      req.destroy();
+      resolve({ error: 'The update check timed out' });
+    });
+  });
+}
+
+ipcMain.handle('settings:get', () => ({
+  autostart: getAutostart(),
+  ...store.loadSettings(),
+}));
+ipcMain.handle('settings:setAutostart', (_e, enabled) => setAutostart(enabled));
+ipcMain.handle('settings:save', (_e, s) => store.saveSettings(s));
+ipcMain.handle('updates:check', () => checkForUpdate());
 
 ipcMain.handle('history:list', () => store.loadHistory());
 ipcMain.handle('history:add', (_e, entry) => store.addHistory(entry));

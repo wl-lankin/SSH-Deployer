@@ -7,6 +7,11 @@ contextBridge.exposeInMainWorld('api', {
   windowControl: (action) => ipcRenderer.send('window:control', action),
   getAppInfo: () => ipcRenderer.invoke('app:info'),
   openExternal: (url) => ipcRenderer.send('shell:open-external', url),
+
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setAutostart: (enabled) => ipcRenderer.invoke('settings:setAutostart', enabled),
+  saveSettings: (s) => ipcRenderer.invoke('settings:save', s),
+  checkForUpdate: () => ipcRenderer.invoke('updates:check'),
   onWindowState: (callback) => {
     const handler = (_e, isMax) => callback(isMax);
     ipcRenderer.on('window:state', handler);

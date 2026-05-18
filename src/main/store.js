@@ -166,6 +166,17 @@ function addHistory(entry) {
   return true;
 }
 
+function loadSettings() {
+  const s = readJson(f('settings.json'), {});
+  return { updateCheckOnStartup: s.updateCheckOnStartup !== false };
+}
+function saveSettings(s) {
+  writeJson(f('settings.json'), {
+    updateCheckOnStartup: !!(s && s.updateCheckOnStartup),
+  });
+  return true;
+}
+
 module.exports = {
   listEnvironments,
   saveEnvironment,
@@ -177,4 +188,6 @@ module.exports = {
   loadHistory,
   saveHistory,
   addHistory,
+  loadSettings,
+  saveSettings,
 };

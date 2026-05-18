@@ -17,6 +17,7 @@
         <span class="tb-title">SSH Deployer</span>
       </div>
       <div class="tb-controls">
+        <button id="win-options" class="tb-btn tb-options" title="Options" aria-label="Options">⚙</button>
         <button id="win-info" class="tb-btn tb-info" title="About SSH Deployer" aria-label="About">ⓘ</button>
         <button id="win-min" class="tb-btn" title="Minimize" aria-label="Minimize">
           <svg width="11" height="11" viewBox="0 0 11 11"><line x1="1" y1="6" x2="10" y2="6" /></svg>
@@ -346,6 +347,60 @@
       </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- ============ OPTIONS OVERLAY ============ -->
+    <div id="options-overlay" class="overlay hidden">
+      <div class="overlay-card options-card">
+        <div class="overlay-head"><h2>Options</h2></div>
+        <div class="options-body">
+          <section class="opt-section">
+            <div class="opt-section-title">Startup</div>
+            <label class="opt-row" for="opt-autostart">
+              <div class="opt-text">
+                <div class="opt-label">Launch at login</div>
+                <div class="opt-desc">Start SSH Deployer automatically when you sign in to this computer.</div>
+              </div>
+              <input type="checkbox" id="opt-autostart" class="opt-switch" />
+            </label>
+          </section>
+          <section class="opt-section">
+            <div class="opt-section-title">Updates</div>
+            <label class="opt-row" for="opt-updatecheck">
+              <div class="opt-text">
+                <div class="opt-label">Check for updates on startup</div>
+                <div class="opt-desc">Look for a newer version each time the app launches.</div>
+              </div>
+              <input type="checkbox" id="opt-updatecheck" class="opt-switch" />
+            </label>
+            <div class="opt-update">
+              <div class="opt-update-main">
+                <span class="opt-update-dot" id="opt-update-dot"></span>
+                <div class="opt-update-text">
+                  <div class="opt-update-status" id="opt-update-status">Not checked yet</div>
+                  <div class="opt-update-sub" id="opt-update-sub"></div>
+                </div>
+              </div>
+              <div class="opt-update-actions">
+                <button id="opt-check" class="btn-ghost">Check now</button>
+                <button id="opt-get" class="btn-primary hidden">Download update</button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="overlay-foot">
+          <button id="options-close" class="btn-primary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="core.js"></script>
+    <script src="tabs.js"></script>
+    <script src="environments.js"></script>
+    <script src="connection.js"></script>
+    <script src="hosts.js"></script>
+    <script src="audit.js"></script>
+    <script src="deploy.js"></script>
+    <script src="history.js"></script>
+    <script src="dialogs.js"></script>
+    <script src="init.js"></script>
   </body>
 </html>
