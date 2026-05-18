@@ -62,9 +62,9 @@ Grab the latest build from the **[Releases page](https://github.com/wl-lankin/SS
 
 | Platform | File | Notes |
 |---|---|---|
-| **Windows** | `SSH Deployer Setup 1.0.0.exe` | Installer. Or `SSH Deployer 1.0.0.exe` for a portable, no‑install build. |
-| **macOS** (Apple Silicon) | `SSH Deployer-1.0.0-arm64.dmg` | Open the disk image and drag the app to **Applications**. |
-| **Linux** | `SSH Deployer-1.0.0.AppImage` | `chmod +x` it and run — works on any distro, no install needed. |
+| **Windows** | `SSH Deployer Setup 1.1.0.exe` | Installer. Or `SSH Deployer 1.1.0.exe` for a portable, no‑install build. |
+| **macOS** (Apple Silicon) | `SSH Deployer-1.1.0-arm64.dmg` | Open the disk image and drag the app to **Applications**. |
+| **Linux** | `SSH Deployer-1.1.0.AppImage` | `chmod +x` it and run — works on any distro, no install needed. |
 
 > **First launch.** The apps are not code‑signed, so the OS may warn you on first run:
 > - **Windows** — SmartScreen → *More info* → *Run anyway*.

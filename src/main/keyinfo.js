@@ -28,19 +28,11 @@ const LABELS = {
 
 /**
  * Validate and describe a single SSH public key line.
- * Returns { valid, type, label, comment, fingerprint, normalized } or
+ * Returns { valid, type, label, comment, fingerprint, b64, normalized } or
  * { valid:false, error }.
  */
-function parsePublicKey(text) {
-  if (!text || !text.trim()) return { valid: false, error: 'No key entered' };
-
-  const line = text
-    .trim()
-    .split(/\r?\n/)
-    .map((s) => s.trim())
-    .filter(Boolean)[0] || '';
-
-  const parts = line.split(/\s+/);
+function describeKeyLine(line) {
+  const parts = String(line || '').trim().split(/\s+/);
   if (parts.length < 2) {
     return { valid: false, error: 'This does not look like a public key' };
   }
@@ -74,7 +66,6 @@ function parsePublicKey(text) {
     crypto.createHash('sha256').update(blob).digest('base64').replace(/=+$/, '');
 
   const comment = rest.join(' ');
-  const normalized = `${type} ${b64}${comment ? ' ' + comment : ''}`;
 
   return {
     valid: true,
@@ -82,8 +73,17 @@ function parsePublicKey(text) {
     label: LABELS[type] || type,
     comment,
     fingerprint,
-    normalized,
+    b64,
+    normalized: `${type} ${b64}${comment ? ' ' + comment : ''}`,
   };
 }
 
-module.exports = { parsePublicKey };
+/** Describe the first key in a pasted block of text. */
+function parsePublicKey(text) {
+  if (!text || !text.trim()) return { valid: false, error: 'No key entered' };
+  const line =
+    text.trim().split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || '';
+  return describeKeyLine(line);
+}
+
+module.exports = { parsePublicKey, describeKeyLine };

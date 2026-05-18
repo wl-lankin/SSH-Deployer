@@ -116,6 +116,22 @@ function deleteEnvironment(id) {
   return true;
 }
 
+function reorderEnvironments(ids) {
+  const list = readEnvList();
+  const byId = {};
+  list.forEach((e) => (byId[e.id] = e));
+  const ordered = [];
+  for (const id of ids || []) {
+    if (byId[id]) {
+      ordered.push(byId[id]);
+      delete byId[id];
+    }
+  }
+  for (const e of list) if (byId[e.id]) ordered.push(e); // keep any leftovers
+  writeJson(f('environments.json'), ordered);
+  return true;
+}
+
 function setLastEnvironment(id) {
   const appState = readJson(f('app-state.json'), {});
   appState.lastEnvId = id || '';
@@ -150,14 +166,28 @@ function addHistory(entry) {
   return true;
 }
 
+function loadSettings() {
+  const s = readJson(f('settings.json'), {});
+  return { updateCheckOnStartup: s.updateCheckOnStartup !== false };
+}
+function saveSettings(s) {
+  writeJson(f('settings.json'), {
+    updateCheckOnStartup: !!(s && s.updateCheckOnStartup),
+  });
+  return true;
+}
+
 module.exports = {
   listEnvironments,
   saveEnvironment,
   deleteEnvironment,
+  reorderEnvironments,
   setLastEnvironment,
   loadWindowState,
   saveWindowState,
   loadHistory,
   saveHistory,
   addHistory,
+  loadSettings,
+  saveSettings,
 };

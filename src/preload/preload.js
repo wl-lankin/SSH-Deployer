@@ -5,6 +5,13 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
   platform: process.platform,
   windowControl: (action) => ipcRenderer.send('window:control', action),
+  getAppInfo: () => ipcRenderer.invoke('app:info'),
+  openExternal: (url) => ipcRenderer.send('shell:open-external', url),
+
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  setAutostart: (enabled) => ipcRenderer.invoke('settings:setAutostart', enabled),
+  saveSettings: (s) => ipcRenderer.invoke('settings:save', s),
+  checkForUpdate: () => ipcRenderer.invoke('updates:check'),
   onWindowState: (callback) => {
     const handler = (_e, isMax) => callback(isMax);
     ipcRenderer.on('window:state', handler);
@@ -18,6 +25,7 @@ contextBridge.exposeInMainWorld('api', {
   listEnvironments: () => ipcRenderer.invoke('env:list'),
   saveEnvironment: (env) => ipcRenderer.invoke('env:save', env),
   deleteEnvironment: (id) => ipcRenderer.invoke('env:delete', id),
+  reorderEnvironments: (ids) => ipcRenderer.invoke('env:reorder', ids),
   setLastEnvironment: (id) => ipcRenderer.invoke('env:setLast', id),
 
   parseKey: (text) => ipcRenderer.invoke('key:parse', text),
@@ -39,6 +47,19 @@ contextBridge.exposeInMainWorld('api', {
     const handler = (_e, msg) => callback(msg);
     ipcRenderer.on('verify:progress', handler);
     return () => ipcRenderer.removeListener('verify:progress', handler);
+  },
+
+  audit: (payload) => ipcRenderer.invoke('audit:start', payload),
+  onAuditProgress: (callback) => {
+    const handler = (_e, msg) => callback(msg);
+    ipcRenderer.on('audit:progress', handler);
+    return () => ipcRenderer.removeListener('audit:progress', handler);
+  },
+  removeKey: (payload) => ipcRenderer.invoke('keyremove:start', payload),
+  onRemoveProgress: (callback) => {
+    const handler = (_e, msg) => callback(msg);
+    ipcRenderer.on('keyremove:progress', handler);
+    return () => ipcRenderer.removeListener('keyremove:progress', handler);
   },
 
   onDeployProgress: (callback) => {
