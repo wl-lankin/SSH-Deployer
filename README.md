@@ -22,7 +22,7 @@ No per‑VM logins. No API tokens. No scripts. Pick your hosts, hit deploy.
 
 <br />
 
-<img src="screenshots/ssh-deployer.png" width="880" alt="SSH Deployer screenshot" />
+<img src="screenshots/ssh-deployer-2026-05-18.png" width="880" alt="SSH Deployer screenshot" />
 
 </div>
 
