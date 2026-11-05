@@ -53,7 +53,13 @@
         "nsis",
         "portable"
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "signtoolOptions": {
+        "sign": "scripts/sign-windows.cjs",
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      }
     },
     "nsis": {
       "oneClick": false,

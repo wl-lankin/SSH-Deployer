@@ -68,9 +68,9 @@ Grab the latest build from the **[Releases page](https://github.com/wl-lankin/SS
 | **macOS** (Apple Silicon) | `SSH Deployer-1.1.0-arm64.dmg` | Open the disk image and drag the app to **Applications**. |
 | **Linux** | `SSH Deployer-1.1.0.AppImage` | `chmod +x` it and run — works on any distro, no install needed. |
 
-> **First launch.** The apps are not code‑signed, so the OS may warn you on first run:
-> - **Windows** — SmartScreen → *More info* → *Run anyway*.
-> - **macOS** — right‑click the app → *Open*, or *System Settings → Privacy & Security → Open Anyway*.
+> **First launch.**
+> - **Windows** — the installer and the app are code‑signed (publisher Wolfgang Linz) from the next release on. While the certificate is new, SmartScreen may still ask once: *More info* → *Run anyway*.
+> - **macOS** — not code‑signed, so the OS may warn you on first run: right‑click the app → *Open*, or *System Settings → Privacy & Security → Open Anyway*.
 
 <br />
 
