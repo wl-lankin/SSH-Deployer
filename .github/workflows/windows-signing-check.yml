@@ -1,0 +1,60 @@
+# Builds and signs the Windows installer without releasing anything, then checks the signatures
+# of the installer and of every .exe in the unpacked app. Runs on pull requests that touch the
+# signing setup, or by hand. The installer is kept as a workflow artifact.
+
+name: Windows signing check
+
+on:
+  pull_request:
+    paths:
+      - .github/actions/windows-signing/**
+      - .github/workflows/windows-signing-check.yml
+      - scripts/sign-windows.cjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  sign:
+    runs-on: windows-latest
+    environment: release
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Signierung vorbereiten
+        uses: ./.github/actions/windows-signing
+        with:
+          description: SSH Deployer
+
+      - name: Installer bauen und signieren
+        run: npx electron-builder --win --publish never
+
+      - name: Signaturen prüfen
+        shell: pwsh
+        run: |
+          $files = @(Get-ChildItem dist/*.exe) + @(Get-ChildItem dist/win-unpacked -Recurse -Filter *.exe)
+          if (-not ($files.Name -contains 'SSH Deployer.exe')) { throw "SSH Deployer.exe missing: $($files.Name -join ', ')" }
+          $bad = 0
+          foreach ($f in $files) {
+            $s = Get-AuthenticodeSignature $f.FullName
+            "{0}: {1} | {2} | timestamp: {3}" -f $f.Name, $s.Status, $s.SignerCertificate.Subject, ($null -ne $s.TimeStamperCertificate)
+            if ($s.Status -ne 'Valid' -or $s.SignerCertificate.Subject -notmatch 'CN=Wolfgang Linz' -or -not $s.TimeStamperCertificate) { $bad++ }
+          }
+          if ($bad) { throw "$bad file(s) not signed correctly" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ssh-deployer-windows-signed
+          path: dist/*.exe
+          retention-days: 7
